@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Svitsai Vanhu",
+    "slug": "svitsai-vanhu",
+    "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.svitsai.ridecompare",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "uber",
+          "bolt",
+          "taxify",
+          "indrive",
+          "indriver"
+        ]
+      }
+    },
+    "android": {},
+    "web": {},
+    "extra": {
+      "geoapifyApiKey": "fd2aa661587741c39ef0e23ca8a519ac",
+      "eas": {
+        "projectId": "e9bdf868-052b-4c3c-9ca2-36cb74510a25"
+      }
+    }
+  }
+}
