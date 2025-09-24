@@ -19,17 +19,26 @@
           "bolt",
           "taxify",
           "indrive",
+          "indriver",
+          "uber",
+          "bolt",
+          "taxify",
+          "indrive",
           "indriver"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "android": {},
+    "android": {
+      "package": "com.svitsai.ridecompare"
+    },
     "web": {},
     "extra": {
       "geoapifyApiKey": "fd2aa661587741c39ef0e23ca8a519ac",
       "eas": {
         "projectId": "e9bdf868-052b-4c3c-9ca2-36cb74510a25"
-      }
+       },
+       "apiBaseUrl": "http://localhost:3001"
     }
   }
 }

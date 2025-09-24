@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, StatusBar, Linking, Alert, Platform } from 'react-native';
 import { theme } from '../theme';
 import { useRoute } from '@react-navigation/native';
 
@@ -7,7 +7,7 @@ export default function ProviderDetailsScreen() {
   const route = useRoute<any>();
   const { item, coords } = route.params as any ?? {};
 
-  function openProviderApp() {
+  async function openProviderApp() {
     const provider = (item?.provider ?? '').toLowerCase();
     const p = coords?.pickup;
     const d = coords?.dropoff;
@@ -15,30 +15,51 @@ export default function ProviderDetailsScreen() {
     const pLon = p?.longitude ?? p?.lon;
     const dLat = d?.latitude ?? d?.lat;
     const dLon = d?.longitude ?? d?.lon;
-    let url: string | null = null;
+
+    // Build scheme URLs first (works in custom dev/prod builds), then universal web fallbacks
+    let schemeUrl: string | null = null;
+    let webUrl: string | null = null;
+
     if (provider.includes('uber')) {
-      // Uber deeplink with coords if available
-      url = pLat && pLon && dLat && dLon
+      schemeUrl = pLat && pLon && dLat && dLon
         ? `uber://?action=setPickup&pickup[latitude]=${pLat}&pickup[longitude]=${pLon}&dropoff[latitude]=${dLat}&dropoff[longitude]=${dLon}`
         : `uber://?action=setPickup&pickup=my_location`;
+      webUrl = pLat && pLon && dLat && dLon
+        ? `https://m.uber.com/ul/?action=setPickup&pickup[latitude]=${pLat}&pickup[longitude]=${pLon}&dropoff[latitude]=${dLat}&dropoff[longitude]=${dLon}`
+        : `https://m.uber.com/ul/?action=setPickup&pickup=my_location`;
     } else if (provider.includes('bolt')) {
-      // Bolt deeplink (coords support varies; try generic)
-      url = pLat && pLon && dLat && dLon
+      schemeUrl = pLat && pLon && dLat && dLon
         ? `bolt://ride?pickup_latitude=${pLat}&pickup_longitude=${pLon}&destination_latitude=${dLat}&destination_longitude=${dLon}`
         : `bolt://ride`;
+      // taxify legacy
+      if (!schemeUrl) schemeUrl = 'taxify://';
+      webUrl = 'https://bolt.eu';
     } else if (provider.includes('indrive')) {
-      url = `indrive://`;
+      schemeUrl = 'indrive://';
+      if (!schemeUrl) schemeUrl = 'indriver://';
+      webUrl = 'https://indrive.com';
     } else if (provider.includes('tap')) {
-      url = null; // placeholder if no known scheme
+      webUrl = 'https://tapgo.rw';
     }
-    if (!url) {
-      Alert.alert('Open Provider', 'Provider app link not configured.');
-      return;
+
+    const tryOpen = async (target?: string | null) => {
+      if (!target) return false;
+      try {
+        const supported = await Linking.canOpenURL(target);
+        if (supported) {
+          await Linking.openURL(target);
+          return true;
+        }
+      } catch {}
+      return false;
+    };
+
+    // In Expo Go, schemes won’t be allowed; this will likely fail and fall back to web
+    const openedScheme = await tryOpen(schemeUrl);
+    if (!openedScheme) {
+      const openedWeb = await tryOpen(webUrl);
+      if (!openedWeb) Alert.alert('Open Provider', 'Unable to open the provider link.');
     }
-    Linking.canOpenURL(url).then((supported) => {
-      if (supported) Linking.openURL(url);
-      else Alert.alert('Open Provider', 'Provider app not installed.');
-    });
   }
 
   return (
