@@ -154,6 +154,15 @@ export default function ResultsScreen() {
     };
   }, [params?.coords]);
 
+  // When travelMin is ready, inject it into rows that don't have provider ETA
+  useEffect(() => {
+    if (travelMin == null) return;
+    setRows(prev => prev.map(r => {
+      const eta = Number.isFinite(r.etaMin) ? r.etaMin : travelMin;
+      return { ...r, etaMin: eta as number };
+    }));
+  }, [travelMin]);
+
   function onSelect(item: Result) {
     navigation.navigate('ProviderDetails' as never, { item, pickup: params?.pickup, dropoff: params?.dropoff, coords: params?.coords } as never);
   }
